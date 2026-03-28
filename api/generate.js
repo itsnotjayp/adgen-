@@ -5,6 +5,8 @@ const RATE_LIMIT = 5;
 const RATE_WINDOW = 60 * 1000;
 const CACHE_TTL = 60 * 60 * 1000;
 
+export const config = { maxDuration: 30 };
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -38,6 +40,9 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -46,8 +51,11 @@ export default async function handler(req, res) {
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 1000,
         temperature: 0.9
-      })
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeout);
 
     const data = await response.json();
     if (!response.ok) throw new Error(data?.error?.message || 'Groq API error');
@@ -59,6 +67,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ text, cached: false });
 
   } catch (e) {
+    if (e.name === 'AbortError') {
+      return res.status(504).json({ error: 'Request timed out. Please try again.' });
+    }
     return res.status(500).json({ error: e.message });
   }
 }
