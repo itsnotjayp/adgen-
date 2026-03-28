@@ -34,24 +34,26 @@ export default async function handler(req, res) {
     return res.status(200).json({ text: cached.text, cached: true });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 1000, temperature: 0.9 }
+        model: 'llama3-8b-8192',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1000,
+        temperature: 0.9
       })
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data?.error?.message || 'Gemini API error');
+    if (!response.ok) throw new Error(data?.error?.message || 'Groq API error');
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    if (!text) throw new Error('Empty response from Gemini');
+    const text = data?.choices?.[0]?.message?.content || '';
+    if (!text) throw new Error('Empty response from Groq');
 
     cache.set(cacheKey, { text, time: now });
     return res.status(200).json({ text, cached: false });
