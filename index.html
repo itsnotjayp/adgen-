@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cheap Marketing — AI Ad Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0b0b0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a3a;
+    --border2: #3a3a50;
+    --accent: #7b6ef6;
+    --accent2: #5b4fd4;
+    --text: #e8e6f5;
+    --muted: #7a788f;
+    --faint: #3a3855;
+    --success: #4ade80;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { border-bottom: 1px solid var(--border); padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+  .logo span { color: var(--accent); }
+  .powered { font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; }
+  .main { display: grid; grid-template-columns: 420px 1fr; height: calc(100vh - 57px); }
+  @media(max-width:900px){ .main { grid-template-columns: 1fr; height: auto; } .output-side { min-height: 500px; border-left: none; border-top: 1px solid var(--border); } }
+  .input-side { border-right: 1px solid var(--border); overflow-y: auto; padding: 1.5rem; }
+  .output-side { display: flex; flex-direction: column; overflow: hidden; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; margin-top: 20px; }
+  .section-label:first-child { margin-top: 0; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; margin-top: 14px; font-weight: 500; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], textarea, input[type=password] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color 0.15s; }
+  input[type=text]:focus, textarea:focus, input[type=password]:focus { border-color: var(--accent); }
+  textarea { resize: vertical; line-height: 1.5; }
+  .svc-row { display: flex; gap: 6px; margin-top: 6px; align-items: center; }
+  .svc-row input { flex: 1; margin: 0; }
+  .rm-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 14px; cursor: pointer; padding: 4px 8px; transition: all 0.15s; line-height: 1; }
+  .rm-btn:hover { border-color: var(--danger); color: var(--danger); }
+  .add-btn { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; margin-top: 8px; padding: 0; font-family: inherit; font-weight: 600; }
+  .add-btn:hover { color: #fff; }
+  .style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+  .style-opt { border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--surface2); }
+  .style-opt:hover { border-color: var(--border2); }
+  .style-opt.chosen { border-color: var(--accent); background: #1e1a3a; }
+  .so-icon { font-size: 20px; line-height: 1; }
+  .so-name { font-size: 11px; font-weight: 700; color: var(--text); margin-top: 5px; }
+  .so-desc { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .api-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 6px; }
+  .api-box p { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .api-box a { color: var(--accent); text-decoration: none; }
+  .api-box a:hover { text-decoration: underline; }
+  .btn-gen { width: 100%; padding: 13px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; margin-top: 1.25rem; letter-spacing: 0.02em; }
+  .btn-gen:hover { background: var(--accent2); }
+  .btn-gen:active { transform: scale(0.98); }
+  .btn-gen:disabled { opacity: 0.4; cursor: not-allowed; }
+  .output-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .output-header span { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .out-actions { display: flex; gap: 8px; }
+  .btn-sm { padding: 6px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: inherit; font-size: 12px; cursor: pointer; transition: all 0.15s; font-weight: 600; }
+  .btn-sm:hover { border-color: var(--border2); color: var(--text); }
+  .btn-sm.ok { background: #052e16; border-color: #166534; color: var(--success); }
+  .output-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--faint); text-align: center; gap: 12px; padding: 3rem 0; }
+  .empty-state .icon { font-size: 40px; opacity: 0.4; }
+  .empty-state p { font-size: 13px; color: var(--muted); max-width: 220px; line-height: 1.5; }
+  .loading-bar { display: none; align-items: center; gap: 10px; padding: 1rem 1.5rem; color: var(--muted); font-size: 13px; border-bottom: 1px solid var(--border); }
+  .loading-bar.show { display: flex; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1.3s infinite; }
+  .dot:nth-child(2){ animation-delay: 0.2s; }
+  .dot:nth-child(3){ animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:0.15;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+  .ad-result { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .ad-result-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .ad-text { padding: 1rem; font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.9; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .err-box { background: #1a0a0a; border: 1px solid #5a1a1a; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--danger); }
+  .err-box strong { display: block; margin-bottom: 4px; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">cheap<span>ads</span></div>
+  <span class="powered">Powered by Gemini AI</span>
+</header>
+
+<div class="main">
+  <div class="input-side">
+
+
+    <div class="section-label">Server Info</div>
+    <label>Server / Brand Name</label>
+    <input type="text" id="name" value="Cheap Marketing™" />
+
+    <label>What do you do?</label>
+    <input type="text" id="desc" value="Affordable Discord advertising and server growth" />
+
+    <label>Invite Link</label>
+    <input type="text" id="invite" value="https://discord.gg/VgqdeEavWE" />
+
+    <div class="section-label" style="margin-top:20px;">Services</div>
+    <div id="svc-list">
+      <div class="svc-row"><input type="text" value="Targeted Discord Advertising" /><button class="rm-btn" onclick="rm(this)">×</button></div>
+      <div class="svc-row"><input type="text" value="Server Growth Strategy" /><button class="rm-btn" onclick="rm(this)">×</button></div>
+      <div class="svc-row"><input type="text" value="Multiple Packages" /><button class="rm-btn" onclick="rm(this)">×</button></div>
+      <div class="svc-row"><input type="text" value="Custom Orders" /><button class="rm-btn" onclick="rm(this)">×</button></div>
+    </div>
+    <button class="add-btn" onclick="addSvc()">+ Add service</button>
+
+    <div class="section-label" style="margin-top:20px;">Optional</div>
+    <label>Hiring Roles (comma separated)</label>
+    <input type="text" id="hiring" value="Outreach Coordinator, Partnerships Coordinator, Client Support" />
+
+    <label>Image URLs (one per line)</label>
+    <textarea id="imgs" style="min-height:80px;">https://media.discordapp.net/attachments/1398728412306342031/1460433421703843911/White_Blue_Minimal_Pricing_Option_Plan_Graph_1.png
+https://media.discordapp.net/attachments/1398728412306342031/1460433422009897178/White_Blue_Minimal_Pricing_Option_Plan_Graph.png
+https://media.discordapp.net/attachments/1398050834402512990/1478355247591329814/CheapBanner.png?ex=69a8191d&is=69a6c79d&hm=df024ea1fa0d57a67669b3b8954436f644042435190d9bbcf191a2bf02432149&=&format=webp&quality=lossless&width=794&height=138</textarea>
+
+    <label>Extra instructions</label>
+    <input type="text" id="extra" placeholder="e.g. keep it short, target small servers..." />
+
+    <div class="section-label" style="margin-top:20px;">Ad Style</div>
+    <div class="style-grid">
+      <div class="style-opt chosen" data-style="bold"><div class="so-icon">🔥</div><div class="so-name">Bold & Hype</div><div class="so-desc">Punchy, high energy</div></div>
+      <div class="style-opt" data-style="clean"><div class="so-icon">✨</div><div class="so-name">Clean & Pro</div><div class="so-desc">Minimal, polished</div></div>
+      <div class="style-opt" data-style="friendly"><div class="so-icon">👋</div><div class="so-name">Friendly</div><div class="so-desc">Warm & casual</div></div>
+      <div class="style-opt" data-style="luxury"><div class="so-icon">💎</div><div class="so-name">Luxury</div><div class="so-desc">Premium feel</div></div>
+      <div class="style-opt" data-style="urgent"><div class="so-icon">⚡</div><div class="so-name">Urgent</div><div class="so-desc">FOMO energy</div></div>
+      <div class="style-opt" data-style="funny"><div class="so-icon">😂</div><div class="so-name">Funny & Edgy</div><div class="so-desc">Meme energy</div></div>
+    </div>
+
+    <button class="btn-gen" id="gen-btn" onclick="generate()">✦ Generate Ad with AI</button>
+  </div>
+
+  <div class="output-side">
+    <div class="output-header">
+      <span>Output</span>
+      <div class="out-actions">
+        <button class="btn-sm" id="copy-btn" onclick="copyAd()">Copy</button>
+        <button class="btn-sm" onclick="generate()">Regenerate</button>
+      </div>
+    </div>
+    <div class="loading-bar" id="loading">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <span>AI is writing your ad...</span>
+    </div>
+    <div class="output-body" id="output-body">
+      <div class="empty-state" id="empty">
+        <div class="icon">✦</div>
+        <p>Fill in your details and hit Generate to create your Discord ad</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let chosenStyle = 'bold';
+
+document.querySelectorAll('.style-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.style-opt').forEach(e => e.classList.remove('chosen'));
+    el.classList.add('chosen');
+    chosenStyle = el.dataset.style;
+  });
+});
+
+function rm(btn){ btn.parentElement.remove(); }
+
+function addSvc(){
+  const d = document.createElement('div');
+  d.className = 'svc-row';
+  d.innerHTML = '<input type="text" placeholder="New service..." /><button class="rm-btn" onclick="rm(this)">×</button>';
+  document.getElementById('svc-list').appendChild(d);
+}
+
+const styleMap = {
+  bold: 'Bold and hype. Use BIG ALL CAPS headers, fire emojis, punchy hook that grabs attention immediately. Make it unmissable and exciting.',
+  clean: 'Clean and professional. Minimal emojis, structured sections, polished and trustworthy. Premium service feel.',
+  friendly: 'Friendly and casual. Warm, like talking to a friend. Light emojis, conversational language.',
+  luxury: 'Luxury and elite. Exclusive, premium wording, imply quality and scarcity. Refined language, minimal emojis.',
+  urgent: 'Urgent and FOMO-driven. Fear of missing out, use words like limited, act now, don\'t miss out. High energy.',
+  funny: 'Funny and edgy. Self-aware humor, meme energy, slightly sarcastic but still sells the server.'
+};
+
+async function generate(){
+  const desc = document.getElementById('desc').value.trim();
+  const invite = document.getElementById('invite').value.trim();
+  const hiring = document.getElementById('hiring').value.trim();
+  const imgs = document.getElementById('imgs').value.trim();
+  const extra = document.getElementById('extra').value.trim();
+  const svcs = Array.from(document.querySelectorAll('#svc-list input')).map(i=>i.value.trim()).filter(Boolean);
+
+  const prompt = `You are a Discord ad copywriter. Write a Discord server advertisement using Discord markdown formatting.
+
+Server: ${name}
+Description: ${desc}
+Services: ${svcs.join(', ')}
+Invite: ${invite}
+${hiring ? 'Hiring: ' + hiring : ''}
+${imgs ? 'Images (put ALL at the very bottom inside > blockquotes, one per line):\n' + imgs : ''}
+${extra ? 'Extra notes: ' + extra : ''}
+
+Style: ${styleMap[chosenStyle]}
+
+Discord markdown rules:
+- # for large header, ## for medium header
+- **text** for bold
+- > text for blockquotes (use for main body sections)
+- Use relevant emojis throughout
+- Dividers: > ------------------------------
+- ALL image URLs go at the very bottom inside > blockquotes, one per line
+
+Be creative with the structure. Make it unique and eye catching. Output ONLY the raw Discord ad text. No explanation, no preamble, just the ad.`;
+
+  const btn = document.getElementById('gen-btn');
+  const body = document.getElementById('output-body');
+  const loading = document.getElementById('loading');
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  loading.classList.add('show');
+  document.getElementById('empty').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok) throw new Error(data?.error || 'API error ' + res.status);
+
+    const text = data?.text || '';
+
+    loading.classList.remove('show');
+    body.innerHTML = '';
+
+    if(text){
+      const box = document.createElement('div');
+      box.className = 'ad-result';
+      box.innerHTML = '<div class="ad-result-label">Discord Ad — ready to paste</div><div class="ad-text" id="ad-text"></div>';
+      body.appendChild(box);
+      document.getElementById('ad-text').textContent = text;
+    } else {
+      body.innerHTML = '<div class="err-box"><strong>No response</strong>Try again.</div>';
+    }
+  } catch(e) {
+    loading.classList.remove('show');
+    body.innerHTML = `<div class="err-box"><strong>Error</strong>${e.message}</div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ Generate Ad with AI';
+}
+
+function copyAd(){
+  const el = document.getElementById('ad-text');
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
