@@ -1,113 +1,160 @@
-const cache = new Map();
 const rateLimits = new Map();
+const cache = new Map();
+const globalStats = { total: 0 };
 
-const RATE_LIMIT = 2;
+const RATE_LIMIT = 10;
 const RATE_WINDOW = 24 * 60 * 60 * 1000;
-const CACHE_TTL = 60 * 60 * 1000;
+const CACHE_TTL = 20 * 60 * 1000;
 
 export const config = { maxDuration: 30 };
 
 const MODELS = [
+  'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
-  'llama3-70b-8192',
-  'mixtral-8x7b-32768'
+  'gemma2-9b-it'
 ];
 
-const FORMAT_STYLES = [
-  `Use this structure: Start with a # header with the server name and a short punchy tagline on the next line. Then a bold sentence describing the value. Then a # Invite Link section with the link. Then any images as [Label](url) markdown links, each on its own line.`,
+const FORMATS = [
+  `Use this exact structure:
+# [SERVER NAME]
+[Short punchy tagline]
+**[Bold value proposition sentence]**
+# Invite Link
+[invite url]
+[Images as [Label](url) at bottom]`,
 
-  `Use this structure: Wrap everything in > blockquotes. Start with a # header inside the quote with an emoji, server name, and a subtitle. Write 2-3 sentences about the server. List services with emoji bullet points inside the quote. Put image URLs raw inside the quote at the bottom. End with the Discord invite link outside the quote.`,
+  `Use this exact structure (everything in > blockquotes):
+> # [emoji] [SERVER NAME] [emoji]
+> [2-3 sentence description]
+> **What We Offer:**
+> [emoji] **[service]**
+> [emoji] **[service]**
+> ------------------------------
+> **Join today:** [invite url]
+> [raw image urls one per line]`,
 
-  `Use this structure: Start with a # header with emojis on both sides and the server name. Write a 2 sentence hook. Use ## for each section like "What We Offer", "Why Choose Us", "Join Today". Under each section use - bullet points. Put raw image URLs under a ## View Our Work section. End with a big # Join section and the invite link.`,
+  `Use this exact structure:
+# [emoji] [SERVER NAME] [emoji]
+[2 sentence hook]
+## ✨ What We Offer
+- [emoji] [service]
+- [emoji] [service]
+## 🔗 Join Today
+[invite url]
+## 📸 View Our Work
+[raw image urls]`,
 
-  `Use this structure: Start with **# Server Name** in bold-header style and a short italic quote tagline. Then a bold hook line with emoji and price or value proposition. List services as - emoji Name lines. Add a hiring section if applicable. Put images as [Image 1](url) [Image 2](url) style links. End with a bold join line and the invite link.`,
+  `Use this exact structure:
+**# [SERVER NAME]** *"[short tagline]"*
+**[emoji] [Bold hook line]**
+- [emoji] [service]
+- [emoji] [service]
+[Images as [Image 1](url)]
+**🔗 Join us:** [invite url]`,
 
-  `Use this structure: Keep it very minimal and clean. Just the server name as a # header. One short bold sentence. A clean bullet list of services with emojis. The invite link. Images as plain URLs on their own lines. No extra sections or headers. Under 400 characters total.`
+  `Minimal structure — under 500 chars total:
+# [SERVER NAME]
+**[One bold sentence]**
+[emoji] [service] • [emoji] [service] • [emoji] [service]
+🔗 [invite url]`
 ];
 
 async function tryGroq(apiKey, prompt, model) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 22000);
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000,
-        temperature: 0.95
+        messages: [
+          { role: 'system', content: 'You are a Discord ad copywriter. Output ONLY the raw Discord ad text. No explanations, no code blocks, no backticks, no preamble. Just the ad.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 700,
+        temperature: 0.92
       }),
-      signal: controller.signal
+      signal: ctrl.signal
     });
-    clearTimeout(timeout);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.error?.message || 'Groq error');
-    const text = data?.choices?.[0]?.message?.content || '';
+    clearTimeout(t);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d?.error?.message || 'API error ' + r.status);
+    const text = (d?.choices?.[0]?.message?.content || '').trim();
     if (!text) throw new Error('Empty response');
     return text;
-  } catch (e) {
-    clearTimeout(timeout);
-    throw e;
-  }
+  } catch(e) { clearTimeout(t); throw e; }
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // GET — return total count
+  if (req.method === 'GET') {
+    return res.status(200).json({ total: globalStats.total });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
   const now = Date.now();
 
-  const userLimit = rateLimits.get(ip) || { count: 0, reset: now + RATE_WINDOW };
-  if (now > userLimit.reset) { userLimit.count = 0; userLimit.reset = now + RATE_WINDOW; }
-  if (userLimit.count >= RATE_LIMIT) {
-    const wait = Math.ceil((userLimit.reset - now) / 1000 / 3600);
-    return res.status(429).json({ error: `Daily limit reached. Resets in ${wait} hour(s).` });
+  const lim = rateLimits.get(ip) || { count: 0, reset: now + RATE_WINDOW };
+  if (now > lim.reset) { lim.count = 0; lim.reset = now + RATE_WINDOW; }
+  if (lim.count >= RATE_LIMIT) {
+    const wait = Math.ceil((lim.reset - now) / 3600000);
+    return res.status(429).json({ error: `Daily limit reached. Resets in ${wait}h.` });
   }
 
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'No prompt provided' });
-
-  const cacheKey = prompt.trim().toLowerCase().slice(0, 300);
-  const cached = cache.get(cacheKey);
-  if (cached && now - cached.time < CACHE_TTL) {
-    return res.status(200).json({ text: cached.text, cached: true });
+  const { prompt, skipCache } = req.body || {};
+  if (!prompt || typeof prompt !== 'string' || prompt.length > 5000) {
+    return res.status(400).json({ error: 'Invalid prompt' });
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
+  const clean = prompt.replace(/<[^>]*>/g, '').trim();
+  const cacheKey = clean.slice(0, 200).toLowerCase();
 
-  const formatStyle = FORMAT_STYLES[Math.floor(Math.random() * FORMAT_STYLES.length)];
-
-  const fullPrompt = `You are a Discord ad copywriter. Write a Discord server advertisement using Discord markdown.
-
-CRITICAL: The entire ad must be UNDER 1800 characters. Count carefully. Do not exceed this.
-
-${prompt}
-
-FORMAT INSTRUCTION (follow this structure exactly):
-${formatStyle}
-
-Output ONLY the raw Discord ad text. No explanation, no preamble, no code blocks. Just the ad itself.`;
-
-  let lastError = null;
-  for (const model of MODELS) {
-    try {
-      const text = await tryGroq(apiKey, fullPrompt, model);
-      userLimit.count++;
-      rateLimits.set(ip, userLimit);
-      cache.set(cacheKey, { text, time: now });
-      const remaining = RATE_LIMIT - userLimit.count;
-      return res.status(200).json({ text, cached: false, remaining });
-    } catch (e) {
-      lastError = e;
+  if (!skipCache) {
+    const hit = cache.get(cacheKey);
+    if (hit && now - hit.time < CACHE_TTL) {
+      return res.status(200).json({ text: hit.text, cached: true, total: globalStats.total });
     }
   }
 
-  return res.status(500).json({ error: lastError?.message || 'All models failed. Try again.' });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'API not configured' });
+
+  const fmt = FORMATS[Math.floor(Math.random() * FORMATS.length)];
+  const fullPrompt = `Write a Discord server advertisement. STAY UNDER 1800 CHARACTERS TOTAL.
+
+${clean}
+
+FORMAT TO FOLLOW EXACTLY:
+${fmt}
+
+Rules:
+- Output ONLY the raw ad text
+- Stay under 1800 characters
+- Use Discord markdown (# headers, **bold**, > blockquotes, emojis)
+- Place ALL image URLs at the very bottom`;
+
+  let lastErr = null;
+  for (const model of MODELS) {
+    try {
+      const text = await tryGroq(apiKey, fullPrompt, model);
+      lim.count++;
+      rateLimits.set(ip, lim);
+      globalStats.total++;
+      cache.set(cacheKey, { text, time: now });
+      return res.status(200).json({ text, cached: false, total: globalStats.total, remaining: RATE_LIMIT - lim.count });
+    } catch(e) { lastErr = e; }
+  }
+
+  return res.status(500).json({ error: lastErr?.message || 'All models failed. Try again.' });
 }
