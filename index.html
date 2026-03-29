@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://api.groq.com;">
+<title>Adgen — by Cheap Marketing™</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0b0b0f; --surface: #13131a; --surface2: #1c1c26; --surface3: #222230;
+  --border: #2a2a3a; --border2: #3a3a50;
+  --accent: #1a6ef5; --accent2: #0d4fc2; --accent-glow: rgba(26,110,245,0.15);
+  --text: #e8e6f5; --muted: #7a788f; --faint: #3a3855;
+  --success: #4ade80; --danger: #f87171; --warning: #fbbf24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* SPLASH */
+#splash {
+  position: fixed; inset: 0; background: #04040a; z-index: 1000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  animation: splashFade 0.8s ease 5.2s forwards; overflow: hidden;
+}
+@keyframes splashFade { to { opacity: 0; pointer-events: none; } }
+.splash-bg-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(26,110,245,0.12) 0%, transparent 70%); animation: glowPulse 3s ease-in-out infinite; pointer-events: none; }
+@keyframes glowPulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.15);opacity:1} }
+.splash-line { position: absolute; width: 1px; background: linear-gradient(to bottom, transparent, rgba(26,110,245,0.3), transparent); animation: scanLine 2s ease-in-out 0.5s infinite; height: 100%; left: 50%; opacity: 0; }
+@keyframes scanLine { 0%{opacity:0;transform:translateX(-200px)} 50%{opacity:1} 100%{opacity:0;transform:translateX(200px)} }
+.splash-logo { width: 80px; height: 80px; position: relative; z-index: 2; animation: logoReveal 1s cubic-bezier(0.16,1,0.3,1) 0.4s both; filter: drop-shadow(0 0 20px rgba(26,110,245,0.6)); }
+@keyframes logoReveal { from{transform:scale(0.5);opacity:0;filter:drop-shadow(0 0 40px rgba(26,110,245,1))} to{transform:scale(1);opacity:1;filter:drop-shadow(0 0 20px rgba(26,110,245,0.6))} }
+.splash-adgen { font-size: 11px; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(26,110,245,0.8); margin-top: 22px; position: relative; z-index: 2; animation: fadeIn 0.6s ease 1.2s both; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.splash-title { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -1.5px; margin-top: 8px; position: relative; z-index: 2; animation: titleSlide 0.8s cubic-bezier(0.16,1,0.3,1) 1.5s both; text-shadow: 0 0 40px rgba(26,110,245,0.4); }
+.splash-title span { color: #1a6ef5; }
+@keyframes titleSlide { from{opacity:0;transform:translateY(20px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+.splash-tagline { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 10px; letter-spacing: 0.08em; position: relative; z-index: 2; animation: taglineReveal 0.6s ease 2.1s both; }
+@keyframes taglineReveal { from{opacity:0;letter-spacing:0.3em} to{opacity:1;letter-spacing:0.08em} }
+.splash-industry { font-size: 12px; color: rgba(255,255,255,0.2); margin-top: 28px; letter-spacing: 0.12em; text-transform: uppercase; position: relative; z-index: 2; animation: industryFade 0.5s ease 2.6s both; }
+@keyframes industryFade { from{opacity:0} to{opacity:1} }
+.splash-industry-word { display: inline-block; animation: wordOut 0.7s cubic-bezier(0.4,0,0.2,1) 3.2s forwards; }
+@keyframes wordOut { to{opacity:0;transform:scale(1.4);letter-spacing:0.4em} }
+.splash-divider { width: 40px; height: 1px; background: rgba(26,110,245,0.4); margin-top: 20px; position: relative; z-index: 2; animation: dividerExpand 0.6s ease 2s both; }
+@keyframes dividerExpand { from{width:0;opacity:0} to{width:40px;opacity:1} }
+
+/* AUTH PAGE */
+#auth-page { display: none; min-height: 100vh; align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem; padding: 2rem; }
+#auth-page.visible { display: flex; }
+.auth-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 400px; text-align: center; }
+.auth-logo { width: 56px; height: 56px; margin: 0 auto 1rem; filter: drop-shadow(0 0 12px rgba(26,110,245,0.5)); }
+.auth-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.auth-title span { color: var(--accent); }
+.auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
+.auth-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+.auth-btn:hover { border-color: var(--accent); background: var(--accent-glow); }
+.auth-btn img { width: 18px; height: 18px; }
+.auth-divider { font-size: 11px; color: var(--muted); margin: 0.5rem 0 1rem; }
+
+/* APP */
+#app { display: none; }
+#app.visible { display: block; }
+
+/* HEADER */
+header { border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+.logo-wrap { display: flex; align-items: center; gap: 10px; }
+.logo-img { width: 32px; height: 32px; }
+.logo-text { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.logo-text span { color: var(--accent); }
+.logo-tag { font-size: 10px; color: var(--muted); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.user-pill { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: all 0.15s; }
+.user-pill:hover { border-color: var(--border2); }
+.user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--accent); }
+.user-name { font-size: 12px; font-weight: 600; color: var(--text); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-signout { font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.btn-signout:hover { border-color: var(--danger); color: var(--danger); }
+.limit-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); }
+.limit-badge.warn { border-color: #92400e; color: var(--warning); }
+.limit-badge.empty { border-color: #7f1d1d; color: var(--danger); }
+
+/* TABS */
+.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 1.5rem; overflow-x: auto; }
+.tab { font-size: 13px; font-weight: 600; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); transition: all 0.15s; margin-bottom: -1px; white-space: nowrap; }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* PANELS */
+.panel { display: none; animation: fadeUp 0.3s ease; }
+.panel.active { display: flex; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* COMMON */
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; margin-top: 18px; }
+.section-label:first-child { margin-top: 0; }
+label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; margin-top: 12px; font-weight: 500; }
+label:first-of-type { margin-top: 0; }
+input[type=text], textarea, select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; padding: 8px 11px; outline: none; transition: border-color 0.15s; }
+input[type=text]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; line-height: 1.5; }
+.svc-row { display: flex; gap: 6px; margin-top: 5px; align-items: center; }
+.svc-row input { flex: 1; margin: 0; }
+.rm-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 14px; cursor: pointer; padding: 3px 8px; transition: all 0.15s; line-height: 1; }
+.rm-btn:hover { border-color: var(--danger); color: var(--danger); }
+.add-btn { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; margin-top: 7px; padding: 0; font-family: inherit; font-weight: 600; }
+.btn-primary { padding: 11px 20px; background: var(--accent); border: none; border-radius: 9px; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 5px 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: inherit; font-size: 12px; cursor: pointer; transition: all 0.15s; font-weight: 600; }
+.btn-sm:hover { border-color: var(--border2); color: var(--text); }
+.btn-sm.ok { background: #052e16; border-color: #166534; color: var(--success); }
+.err-box { background: #1a0a0a; border: 1px solid #5a1a1a; border-radius: 9px; padding: 11px 13px; font-size: 13px; color: var(--danger); }
+.err-box strong { display: block; margin-bottom: 3px; }
+.loading-bar { display: none; align-items: center; gap: 9px; padding: 0.9rem 1.25rem; color: var(--muted); font-size: 13px; border-bottom: 1px solid var(--border); }
+.loading-bar.show { display: flex; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.3s infinite; }
+.dot:nth-child(2){ animation-delay: 0.2s; }
+.dot:nth-child(3){ animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100%{opacity:0.15;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* AD GENERATOR */
+#tab-adgen { height: calc(100vh - 103px); }
+.input-side { width: 380px; min-width: 380px; border-right: 1px solid var(--border); overflow-y: auto; padding: 1.25rem; }
+.output-side { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+@media(max-width:900px){ .input-side{width:100%;min-width:unset;} #tab-adgen{flex-direction:column;height:auto;} }
+.style-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-top: 4px; }
+.style-opt { border: 1px solid var(--border); border-radius: 9px; padding: 9px 7px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--surface2); }
+.style-opt:hover { border-color: var(--border2); }
+.style-opt.chosen { border-color: var(--accent); background: #0d1a35; }
+.so-icon { font-size: 18px; line-height: 1; }
+.so-name { font-size: 11px; font-weight: 700; color: var(--text); margin-top: 4px; }
+.so-desc { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.btn-gen { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 9px; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s,transform 0.1s; margin-top: 1rem; }
+.btn-gen:hover { background: var(--accent2); }
+.btn-gen:active { transform: scale(0.98); }
+.btn-gen:disabled { opacity: 0.4; cursor: not-allowed; }
+.output-header { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.output-header-left { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.out-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.output-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.output-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:700px){ .output-cols{grid-template-columns:1fr;} }
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); text-align: center; gap: 10px; padding: 3rem 0; }
+.empty-icon { font-size: 36px; opacity: 0.3; }
+.empty-state p { font-size: 12px; color: var(--muted); max-width: 200px; line-height: 1.5; }
+.ad-result { background: var(--surface); border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
+.ad-result-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 9px 13px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: space-between; }
+.ad-text { padding: 1rem; font-family: 'DM Mono',monospace; font-size: 12px; line-height: 1.9; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.cached-badge { font-size: 10px; background: #052e16; color: var(--success); padding: 2px 7px; border-radius: 10px; }
+
+/* DISCORD PREVIEW */
+.discord-preview-wrap { background: #313338; border-radius: 8px; padding: 1rem; font-size: 13px; line-height: 1.6; color: #dbdee1; font-family: 'gg sans', 'Noto Sans', sans-serif; min-height: 80px; }
+.discord-preview-wrap h1 { font-size: 20px; font-weight: 700; color: #fff; margin: 4px 0; }
+.discord-preview-wrap h2 { font-size: 16px; font-weight: 600; color: #fff; margin: 4px 0; }
+.discord-preview-wrap h3 { font-size: 14px; font-weight: 600; color: #fff; margin: 4px 0; }
+.discord-preview-wrap strong { color: #fff; font-weight: 700; }
+.discord-preview-wrap em { font-style: italic; }
+.discord-preview-wrap .dc-quote { border-left: 4px solid #4e5058; padding-left: 12px; margin: 4px 0; color: #dbdee1; }
+.discord-preview-wrap a { color: #00aff4; text-decoration: none; }
+.discord-preview-wrap hr { border: none; border-top: 1px solid #4e5058; margin: 8px 0; }
+.char-count { font-size: 11px; color: var(--muted); text-align: right; padding: 4px 8px; }
+.char-count.over { color: var(--danger); }
+
+/* DASHBOARD */
+#tab-dashboard { flex-direction: column; padding: 1.5rem; gap: 1.25rem; min-height: calc(100vh - 103px); }
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.dash-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.dash-card-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.ad-history-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+.ad-history-item:hover { border-color: var(--accent); }
+.ad-history-preview { font-size: 11px; color: var(--muted); font-family: 'DM Mono',monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad-history-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.ad-history-date { font-size: 10px; color: var(--faint); }
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; transition: transform 0.15s; }
+.fav-btn:hover { transform: scale(1.2); }
+.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1rem; }
+.stat-card { background: var(--surface2); border-radius: 8px; padding: 12px; text-align: center; }
+.stat-num { font-size: 24px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* TEMPLATES */
+#tab-templates { flex-direction: column; padding: 1.5rem; gap: 1.25rem; min-height: calc(100vh - 103px); }
+.template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+.template-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; transition: border-color 0.15s; cursor: pointer; }
+.template-card:hover { border-color: var(--accent); }
+.template-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.template-meta { font-size: 11px; color: var(--muted); }
+.template-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+/* IMAGE EDITOR */
+#tab-imagegen { flex-direction: column; padding: 1.5rem; gap: 1.25rem; min-height: calc(100vh - 103px); }
+.ig-grid { display: grid; grid-template-columns: 380px 1fr; gap: 1.25rem; }
+@media(max-width:900px){ .ig-grid{grid-template-columns:1fr;} }
+.ig-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.ig-panel h3 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+.upload-zone { border: 1.5px dashed var(--border2); border-radius: 9px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s; position: relative; }
+.upload-zone:hover { border-color: var(--accent); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .uz-icon { font-size: 24px; margin-bottom: 6px; }
+.upload-zone p { font-size: 12px; color: var(--muted); }
+.upload-zone.has-file { border-color: var(--accent); border-style: solid; }
+.mode-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.mode-tab { flex: 1; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); color: var(--muted); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; min-width: 60px; }
+.mode-tab.active { border-color: var(--accent); color: var(--text); background: #0d1a35; }
+.mode-section { display: none; }
+.mode-section.active { display: block; }
+.canvas-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 300px; }
+canvas { max-width: 100%; display: block; }
+.btn-dl { width: 100%; padding: 11px; background: var(--accent); border: none; border-radius: 9px; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; margin-top: 1rem; }
+.btn-dl:hover { background: var(--accent2); }
+.btn-dl:disabled { opacity: 0.4; cursor: not-allowed; }
+.range-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.range-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.range-val { font-size: 12px; color: var(--muted); min-width: 36px; text-align: right; }
+.color-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.color-row input[type=color] { width: 36px; height: 28px; border: none; background: none; cursor: pointer; border-radius: 4px; }
+.pos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; margin-top: 6px; }
+.pos-btn { padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--muted); font-size: 10px; cursor: pointer; text-align: center; transition: all 0.15s; }
+.pos-btn.active { border-color: var(--accent); color: var(--text); background: #0d1a35; }
+.preset-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; margin-top: 6px; }
+.preset-btn { padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); color: var(--muted); font-size: 11px; cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit; }
+.preset-btn:hover { border-color: var(--accent); color: var(--text); }
+.sticker-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin-top: 6px; }
+.sticker-btn { font-size: 22px; padding: 6px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); cursor: pointer; text-align: center; transition: all 0.15s; line-height: 1; }
+.sticker-btn:hover { border-color: var(--accent); background: #0d1a35; }
+.layer-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; margin-top: 5px; font-size: 12px; }
+.layer-item span { color: var(--text); }
+.font-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+
+.powered-by { font-size: 11px; color: var(--muted); text-align: center; padding: 0.75rem; border-top: 1px solid var(--border); }
+.powered-by span { color: var(--accent); font-weight: 700; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-bg-glow"></div>
+  <div class="splash-line"></div>
+  <img class="splash-logo" src="/logo.png" alt="Cheap Marketing"/>
+  <div class="splash-adgen">Adgen by</div>
+  <div class="splash-title">Cheap <span>Marketing™</span></div>
+  <div class="splash-divider"></div>
+  <div class="splash-tagline">Big Results, Small Budget</div>
+  <div class="splash-industry"><span class="splash-industry-word">Changing the Industry</span></div>
+</div>
+
+<!-- AUTH PAGE -->
+<div id="auth-page">
+  <div class="auth-card">
+    <img class="auth-logo" src="/logo.png" alt="Logo"/>
+    <div class="auth-title">Ad<span>gen</span></div>
+    <div class="auth-sub">by Cheap Marketing™ — Sign in to continue</div>
+    <button class="auth-btn" onclick="signIn('google')">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+    <button class="auth-btn" onclick="signIn('discord')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      Continue with Discord
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="logo-wrap">
+      <img class="logo-img" src="/logo.png" alt="C"/>
+      <div>
+        <div class="logo-text">Cheap <span>Marketing™</span></div>
+        <div class="logo-tag">Big Results, Small Budget</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="limit-badge" id="limit-badge">— ads left</div>
+      <div class="user-pill" id="user-pill">
+        <img class="user-avatar" id="user-avatar" src="" alt=""/>
+        <span class="user-name" id="user-name">...</span>
+      </div>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('adgen',this)">✦ Ad Generator</div>
+    <div class="tab" onclick="switchTab('dashboard',this)">📊 Dashboard</div>
+    <div class="tab" onclick="switchTab('templates',this)">📋 Templates</div>
+    <div class="tab" onclick="switchTab('imagegen',this)">🖼 Image Editor</div>
+  </div>
+
+  <!-- AD GENERATOR -->
+  <div class="panel active" id="tab-adgen">
+    <div class="input-side">
+      <div class="section-label">Server Info</div>
+      <label>Server / Brand Name</label>
+      <input type="text" id="name" placeholder="e.g. Cheap Marketing™"/>
+      <label>What do you do?</label>
+      <input type="text" id="desc" placeholder="e.g. Affordable Discord advertising"/>
+      <label>Invite Link</label>
+      <input type="text" id="invite" placeholder="https://discord.gg/..."/>
+
+      <div class="section-label">Services</div>
+      <div id="svc-list">
+        <div class="svc-row"><input type="text" placeholder="e.g. Targeted Advertising"/><button class="rm-btn" onclick="rm(this)">×</button></div>
+        <div class="svc-row"><input type="text" placeholder="e.g. Server Growth Strategy"/><button class="rm-btn" onclick="rm(this)">×</button></div>
+      </div>
+      <button class="add-btn" onclick="addSvc()">+ Add service</button>
+
+      <div class="section-label">Optional</div>
+      <label>Hiring Roles (comma separated)</label>
+      <input type="text" id="hiring" placeholder="e.g. Outreach Coordinator"/>
+      <div class="section-label">Image URLs</div>
+      <div id="img-list"></div>
+      <button class="add-btn" onclick="addImg()">+ Add image URL</button>
+      <label style="margin-top:12px;">Extra instructions</label>
+      <input type="text" id="extra" placeholder="e.g. keep it short..."/>
+
+      <div class="section-label">Ad Style</div>
+      <div class="style-grid">
+        <div class="style-opt chosen" data-style="bold"><div class="so-icon">🔥</div><div class="so-name">Bold & Hype</div><div class="so-desc">High energy</div></div>
+        <div class="style-opt" data-style="clean"><div class="so-icon">✨</div><div class="so-name">Clean & Pro</div><div class="so-desc">Polished</div></div>
+        <div class="style-opt" data-style="friendly"><div class="so-icon">👋</div><div class="so-name">Friendly</div><div class="so-desc">Warm & casual</div></div>
+        <div class="style-opt" data-style="luxury"><div class="so-icon">💎</div><div class="so-name">Luxury</div><div class="so-desc">Premium feel</div></div>
+        <div class="style-opt" data-style="urgent"><div class="so-icon">⚡</div><div class="so-name">Urgent</div><div class="so-desc">FOMO energy</div></div>
+        <div class="style-opt" data-style="funny"><div class="so-icon">😂</div><div class="so-name">Funny & Edgy</div><div class="so-desc">Meme energy</div></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-gen" id="gen-btn" onclick="generate(false)" style="flex:1;">✦ Generate</button>
+        <button class="btn-gen" id="ab-btn" onclick="generate(true)" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);">A/B</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-sm" onclick="saveTemplate()" style="flex:1;">💾 Save as Template</button>
+      </div>
+    </div>
+
+    <div class="output-side">
+      <div class="output-header">
+        <span class="output-header-left">Output</span>
+        <div class="out-actions">
+          <button class="btn-sm" id="copy-btn" onclick="copyAd()">Copy</button>
+          <button class="btn-sm" onclick="generate(false)">Regenerate</button>
+          <button class="btn-sm" onclick="togglePreview()">👁 Preview</button>
+          <button class="btn-sm" onclick="saveAdToHistory()">⭐ Save</button>
+        </div>
+      </div>
+      <div class="loading-bar" id="loading">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span id="loading-text">AI is writing your ad...</span>
+      </div>
+      <div class="output-body" id="output-body">
+        <div class="empty-state" id="empty">
+          <div class="empty-icon">✦</div>
+          <p>Fill in your details and generate your Discord ad</p>
+        </div>
+      </div>
+      <div class="powered-by">Powered by <span>Cheap Marketing™</span></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="panel" id="tab-dashboard">
+    <div style="width:100%;">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Ads Generated</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">Saved Ads</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-templates">0</div><div class="stat-label">Templates</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:700;">Recent Ads</div>
+        <button class="btn-sm" onclick="loadHistory()">↺ Refresh</button>
+      </div>
+      <div id="history-list"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATES -->
+  <div class="panel" id="tab-templates">
+    <div style="width:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;">Saved Templates</div>
+        <button class="btn-sm" onclick="loadTemplates()">↺ Refresh</button>
+      </div>
+      <div class="template-grid" id="template-grid">
+        <div style="color:var(--muted);font-size:13px;">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE EDITOR -->
+  <div class="panel" id="tab-imagegen">
+    <div class="ig-grid" style="width:100%;">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="ig-panel">
+          <h3>Upload Image</h3>
+          <div class="upload-zone" id="main-upload-zone">
+            <input type="file" id="main-img-input" accept="image/*" onchange="loadMainImage(this)"/>
+            <div class="uz-icon">🖼</div>
+            <p>Click or drag your image here</p>
+          </div>
+          <div class="section-label" style="margin-top:14px;">Resize Presets</div>
+          <div class="preset-grid">
+            <button class="preset-btn" onclick="resizeCanvas(1500,500)">Discord Banner<br><span style="font-size:10px;opacity:0.6;">1500×500</span></button>
+            <button class="preset-btn" onclick="resizeCanvas(512,512)">Server Icon<br><span style="font-size:10px;opacity:0.6;">512×512</span></button>
+            <button class="preset-btn" onclick="resizeCanvas(1280,720)">Thumbnail<br><span style="font-size:10px;opacity:0.6;">1280×720</span></button>
+            <button class="preset-btn" onclick="resizeCanvas(1920,1080)">Wallpaper<br><span style="font-size:10px;opacity:0.6;">1920×1080</span></button>
+          </div>
+        </div>
+
+        <div class="ig-panel">
+          <h3>Edit Mode</h3>
+          <div class="mode-tabs">
+            <div class="mode-tab active" onclick="switchMode('logo',this)">Logo</div>
+            <div class="mode-tab" onclick="switchMode('text',this)">Text</div>
+            <div class="mode-tab" onclick="switchMode('blur',this)">Blur</div>
+            <div class="mode-tab" onclick="switchMode('sticker',this)">Stickers</div>
+          </div>
+
+          <!-- LOGO MODE -->
+          <div class="mode-section active" id="mode-logo">
+            <div class="upload-zone" id="logo-upload-zone" style="padding:0.75rem;">
+              <input type="file" id="logo-img-input" accept="image/*" onchange="loadLogoImage(this)"/>
+              <div class="uz-icon" style="font-size:18px;">©</div>
+              <p>Upload logo</p>
+            </div>
+            <label style="margin-top:10px;">Logo Size (on image)</label>
+            <div class="range-row">
+              <input type="range" min="5" max="40" value="18" id="logo-size" oninput="updateCanvas();document.getElementById('logo-size-val').textContent=this.value+'%'"/>
+              <span class="range-val" id="logo-size-val">18%</span>
+            </div>
+            <label>Opacity</label>
+            <div class="range-row">
+              <input type="range" min="10" max="100" value="90" id="logo-opacity" oninput="updateCanvas();document.getElementById('logo-opacity-val').textContent=this.value+'%'"/>
+              <span class="range-val" id="logo-opacity-val">90%</span>
+            </div>
+            <label>Position</label>
+            <div class="pos-grid">
+              <div class="pos-btn" onclick="setPos('tl',this)">↖</div>
+              <div class="pos-btn" onclick="setPos('tc',this)">↑</div>
+              <div class="pos-btn" onclick="setPos('tr',this)">↗</div>
+              <div class="pos-btn" onclick="setPos('ml',this)">←</div>
+              <div class="pos-btn" onclick="setPos('mc',this)">·</div>
+              <div class="pos-btn" onclick="setPos('mr',this)">→</div>
+              <div class="pos-btn" onclick="setPos('bl',this)">↙</div>
+              <div class="pos-btn" onclick="setPos('bc',this)">↓</div>
+              <div class="pos-btn active" onclick="setPos('br',this)">↘</div>
+            </div>
+          </div>
+
+          <!-- TEXT MODE -->
+          <div class="mode-section" id="mode-text">
+            <label>Text</label>
+            <input type="text" id="text-content" value="Cheap Marketing™" oninput="updateCanvas()"/>
+            <div class="font-row">
+              <div>
+                <label>Font</label>
+                <select id="text-font" onchange="updateCanvas()">
+                  <option value="Syne">Syne</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Impact">Impact</option>
+                  <option value="Courier New">Courier New</option>
+                </select>
+              </div>
+              <div>
+                <label>Size</label>
+                <div class="range-row" style="margin-top:4px;">
+                  <input type="range" min="12" max="120" value="36" id="text-size" oninput="updateCanvas();document.getElementById('text-size-val').textContent=this.value"/>
+                  <span class="range-val" id="text-size-val">36</span>
+                </div>
+              </div>
+            </div>
+            <div class="font-row" style="margin-top:8px;">
+              <div>
+                <label>Style</label>
+                <div style="display:flex;gap:6px;margin-top:4px;">
+                  <button class="pos-btn" id="bold-btn" onclick="toggleTextStyle('bold')"><b>B</b></button>
+                  <button class="pos-btn" id="italic-btn" onclick="toggleTextStyle('italic')"><i>I</i></button>
+                </div>
+              </div>
+              <div>
+                <label>Color</label>
+                <div class="color-row"><input type="color" id="text-color" value="#ffffff" oninput="updateCanvas()"/></div>
+              </div>
+            </div>
+            <label>Subtext</label>
+            <input type="text" id="text-sub" placeholder="Optional subtext..." oninput="updateCanvas()"/>
+            <label>Position</label>
+            <div class="pos-grid">
+              <div class="pos-btn" onclick="setTextPos('tl',this)">↖</div>
+              <div class="pos-btn" onclick="setTextPos('tc',this)">↑</div>
+              <div class="pos-btn" onclick="setTextPos('tr',this)">↗</div>
+              <div class="pos-btn" onclick="setTextPos('ml',this)">←</div>
+              <div class="pos-btn active" onclick="setTextPos('mc',this)">·</div>
+              <div class="pos-btn" onclick="setTextPos('mr',this)">→</div>
+              <div class="pos-btn" onclick="setTextPos('bl',this)">↙</div>
+              <div class="pos-btn" onclick="setTextPos('bc',this)">↓</div>
+              <div class="pos-btn" onclick="setTextPos('br',this)">↘</div>
+            </div>
+          </div>
+
+          <!-- BLUR MODE -->
+          <div class="mode-section" id="mode-blur">
+            <label>Blur Amount</label>
+            <div class="range-row">
+              <input type="range" min="0" max="20" value="8" id="blur-amount" oninput="updateCanvas();document.getElementById('blur-val').textContent=this.value+'px'"/>
+              <span class="range-val" id="blur-val">8px</span>
+            </div>
+            <label>Overlay Darkness</label>
+            <div class="range-row">
+              <input type="range" min="0" max="80" value="40" id="overlay-dark" oninput="updateCanvas();document.getElementById('dark-val').textContent=this.value+'%'"/>
+              <span class="range-val" id="dark-val">40%</span>
+            </div>
+          </div>
+
+          <!-- STICKER MODE -->
+          <div class="mode-section" id="mode-sticker">
+            <label>Pick a sticker</label>
+            <div class="sticker-grid" id="sticker-grid"></div>
+            <label style="margin-top:10px;">Size</label>
+            <div class="range-row">
+              <input type="range" min="20" max="200" value="80" id="sticker-size" oninput="document.getElementById('sticker-size-val').textContent=this.value"/>
+              <span class="range-val" id="sticker-size-val">80</span>
+            </div>
+            <label>Position</label>
+            <div class="pos-grid">
+              <div class="pos-btn" onclick="setStickerPos('tl',this)">↖</div>
+              <div class="pos-btn" onclick="setStickerPos('tc',this)">↑</div>
+              <div class="pos-btn" onclick="setStickerPos('tr',this)">↗</div>
+              <div class="pos-btn" onclick="setStickerPos('ml',this)">←</div>
+              <div class="pos-btn active" onclick="setStickerPos('mc',this)">·</div>
+              <div class="pos-btn" onclick="setStickerPos('mr',this)">→</div>
+              <div class="pos-btn" onclick="setStickerPos('bl',this)">↙</div>
+              <div class="pos-btn" onclick="setStickerPos('bc',this)">↓</div>
+              <div class="pos-btn" onclick="setStickerPos('br',this)">↘</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ig-panel" style="display:flex;flex-direction:column;">
+        <h3>Preview</h3>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:2rem;">Upload an image to get started</div>
+        </div>
+        <button class="btn-dl" id="dl-btn" onclick="downloadImage()" disabled>Download Full Resolution</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SECURITY: sanitize all user input ──
+function sanitize(str) {
+  return String(str).replace(/[<>'"&]/g, c => ({'<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;','&':'&amp;'}[c]));
+}
+
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://qdzwkcqdnltievkpaftb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_S0euMDckFdDDPgr59L72Qg_vXVh-ZYt';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+// ── SPLASH ──
+setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 6100);
+
+// ── AUTH ──
+async function signIn(provider) {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) alert('Sign in failed: ' + error.message);
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('auth-page').classList.add('visible');
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    await onSignedIn(session.user);
+  } else {
+    document.getElementById('auth-page').classList.add('visible');
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      await onSignedIn(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      document.getElementById('app').classList.remove('visible');
+      document.getElementById('auth-page').classList.add('visible');
+    }
+  });
+}
+
+async function onSignedIn(user) {
+  currentUser = user;
+  document.getElementById('auth-page').classList.remove('visible');
+  document.getElementById('app').classList.add('visible');
+  const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+  const avatar = user.user_metadata?.avatar_url || '';
+  document.getElementById('user-name').textContent = sanitize(name);
+  document.getElementById('user-avatar').src = avatar;
+  updateBadge();
+  await loadHistory();
+  await loadTemplates();
+}
+
+// ── TABS ──
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'dashboard') loadHistory();
+  if (name === 'templates') loadTemplates();
+}
+
+// ── RATE LIMITING ──
+const DAILY_LIMIT = 10;
+function getUsage() {
+  try {
+    const stored = localStorage.getItem('cm_usage_' + (currentUser?.id || 'guest'));
+    if (!stored) return { count: 0, date: new Date().toDateString() };
+    const p = JSON.parse(stored);
+    if (p.date !== new Date().toDateString()) return { count: 0, date: new Date().toDateString() };
+    return p;
+  } catch { return { count: 0, date: new Date().toDateString() }; }
+}
+function saveUsage(count) {
+  try { localStorage.setItem('cm_usage_' + (currentUser?.id || 'guest'), JSON.stringify({ count, date: new Date().toDateString() })); } catch {}
+}
+function resetLimit() { try { localStorage.removeItem('cm_usage_' + (currentUser?.id || 'guest')); updateBadge(); } catch {} }
+function updateBadge() {
+  const usage = getUsage();
+  const left = DAILY_LIMIT - usage.count;
+  const badge = document.getElementById('limit-badge');
+  badge.className = 'limit-badge';
+  if (left <= 0) { badge.textContent = '0 ads left'; badge.classList.add('empty'); }
+  else if (left <= 2) { badge.textContent = left + ' ad' + (left===1?'':'s') + ' left'; badge.classList.add('warn'); }
+  else { badge.textContent = left + ' ads left'; }
+}
+
+// ── AD GENERATOR ──
+let chosenStyle = 'bold';
+let showPreview = false;
+let lastAdText = '';
+
+document.querySelectorAll('.style-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.style-opt').forEach(e => e.classList.remove('chosen'));
+    el.classList.add('chosen');
+    chosenStyle = el.dataset.style;
+  });
+});
+
+function rm(btn){ btn.parentElement.remove(); }
+function addSvc(){
+  const d = document.createElement('div'); d.className = 'svc-row';
+  d.innerHTML = '<input type="text" placeholder="New service..."/><button class="rm-btn" onclick="rm(this)">×</button>';
+  document.getElementById('svc-list').appendChild(d);
+}
+function addImg(){
+  const d = document.createElement('div'); d.className = 'svc-row';
+  d.innerHTML = '<input type="text" placeholder="https://..."/><button class="rm-btn" onclick="rm(this)">×</button>';
+  document.getElementById('img-list').appendChild(d);
+}
+
+const styleMap = {
+  bold: 'Bold and hype. Use BIG ALL CAPS headers, fire emojis, punchy hook.',
+  clean: 'Clean and professional. Minimal emojis, polished and trustworthy.',
+  friendly: 'Friendly and casual. Warm, like talking to a friend.',
+  luxury: 'Luxury and elite. Exclusive, premium wording.',
+  urgent: 'Urgent and FOMO-driven. Use words like limited, act now.',
+  funny: 'Funny and edgy. Self-aware humor, meme energy.'
+};
+
+function getFormData() {
+  return {
+    name: sanitize(document.getElementById('name').value.trim()),
+    desc: sanitize(document.getElementById('desc').value.trim()),
+    invite: document.getElementById('invite').value.trim().replace(/[<>'"]/g,''),
+    hiring: sanitize(document.getElementById('hiring').value.trim()),
+    imgs: Array.from(document.querySelectorAll('#img-list input')).map(i=>i.value.trim()).filter(Boolean),
+    extra: sanitize(document.getElementById('extra').value.trim()),
+    svcs: Array.from(document.querySelectorAll('#svc-list input')).map(i=>sanitize(i.value.trim())).filter(Boolean)
+  };
+}
+
+function buildPrompt(data) {
+  return `You are a Discord ad copywriter. Write a Discord server advertisement using Discord markdown.
+Server: ${data.name}
+Description: ${data.desc}
+Services: ${data.svcs.join(', ')}
+Invite: ${data.invite}
+${data.hiring ? 'Hiring: ' + data.hiring : ''}
+${data.imgs.length ? 'Images (ALL at very bottom inside > blockquotes, one per line):\n' + data.imgs.join('\n') : ''}
+${data.extra ? 'Extra: ' + data.extra : ''}
+Style: ${styleMap[chosenStyle]}
+Discord markdown: # big header, ## medium, **bold**, > blockquotes for body, emojis throughout.
+ALL image URLs go at very bottom inside > blockquotes one per line.
+Output ONLY the raw Discord ad. No explanation. Keep under 1800 characters.`;
+}
+
+function renderDiscordPreview(text) {
+  let html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^> (.+)$/gm, '<div class="dc-quote">$1</div>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>')
+    .replace(/\n/g, '<br>');
+  return `<div class="discord-preview-wrap">${html}</div>`;
+}
+
+async function generate(ab = false) {
+  const btn = document.getElementById('gen-btn');
+  const body = document.getElementById('output-body');
+  const loading = document.getElementById('loading');
+  if (btn.disabled) return;
+
+  const usage = getUsage();
+  if (usage.count >= DAILY_LIMIT) {
+    body.innerHTML = '<div class="err-box"><strong>Daily limit reached</strong>Come back tomorrow or click ↺ Reset.</div>';
+    return;
+  }
+
+  const data = getFormData();
+  const prompt = buildPrompt(data);
+
+  btn.disabled = true;
+  document.getElementById('ab-btn').disabled = true;
+  btn.textContent = 'Generating...';
+  loading.classList.add('show');
+  document.getElementById('loading-text').textContent = ab ? 'Generating 2 versions...' : 'AI is writing your ad...';
+  body.innerHTML = '';
+
+  try {
+    const fetchAd = async () => {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 25000);
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+        signal: controller.signal
+      });
+      clearTimeout(tid);
+      const d = await res.json();
+      if (!res.ok) throw new Error(d?.error || 'Error ' + res.status);
+      return d?.text || '';
+    };
+
+    if (ab) {
+      const [t1, t2] = await Promise.all([fetchAd(), fetchAd()]);
+      loading.classList.remove('show');
+      saveUsage(usage.count + 2);
+      updateBadge();
+      body.innerHTML = '<div class="output-cols" id="ab-cols"></div>';
+      const cols = document.getElementById('ab-cols');
+      [t1, t2].forEach((t, i) => {
+        lastAdText = t;
+        const box = document.createElement('div');
+        box.className = 'ad-result';
+        box.innerHTML = `<div class="ad-result-label"><span>Version ${i+1}</span><span class="char-count ${t.length>2000?'over':''}">${t.length}/2000</span></div><div class="ad-text" id="ad-text-${i}">${t}</div>`;
+        box.querySelector('.ad-text').textContent = t;
+        cols.appendChild(box);
+      });
+    } else {
+      const text = await fetchAd();
+      loading.classList.remove('show');
+      saveUsage(usage.count + 1);
+      updateBadge();
+      lastAdText = text;
+      const box = document.createElement('div');
+      box.className = 'ad-result';
+      box.innerHTML = `<div class="ad-result-label"><span>Discord Ad</span><span class="char-count ${text.length>2000?'over':''}">${text.length}/2000</span></div><div class="ad-text" id="ad-text"></div>`;
+      box.querySelector('.ad-text').textContent = text;
+      body.appendChild(box);
+      if (showPreview) {
+        const prev = document.createElement('div');
+        prev.innerHTML = renderDiscordPreview(text);
+        body.appendChild(prev);
+      }
+    }
+  } catch(e) {
+    loading.classList.remove('show');
+    const msg = e.name === 'AbortError' ? 'Request timed out. Try again.' : e.message;
+    body.innerHTML = `<div class="err-box"><strong>Error</strong> ${msg}</div>`;
+  }
+  btn.disabled = false;
+  document.getElementById('ab-btn').disabled = false;
+  btn.textContent = '✦ Generate';
+}
+
+function togglePreview() {
+  showPreview = !showPreview;
+  if (lastAdText && showPreview) {
+    const body = document.getElementById('output-body');
+    const existing = body.querySelector('.discord-preview-wrap');
+    if (!existing) body.insertAdjacentHTML('beforeend', renderDiscordPreview(lastAdText));
+  } else {
+    const existing = document.querySelector('.discord-preview-wrap');
+    if (existing) existing.parentElement?.remove();
+  }
+}
+
+function copyAd() {
+  const el = document.getElementById('ad-text') || document.getElementById('ad-text-0');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+async function saveAdToHistory() {
+  if (!currentUser || !lastAdText) return;
+  const data = getFormData();
+  const { error } = await sb.from('ads').insert({
+    user_id: currentUser.id,
+    content: lastAdText,
+    server_name: data.name,
+    style: chosenStyle
+  });
+  if (!error) { alert('Ad saved!'); loadHistory(); }
+  else alert('Save failed: ' + error.message);
+}
+
+// ── HISTORY ──
+async function loadHistory() {
+  if (!currentUser) return;
+  const { data, error } = await sb.from('ads').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
+  if (error) return;
+
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-saved').textContent = data.filter(a=>a.favorited).length;
+
+  const list = document.getElementById('history-list');
+  if (!data.length) { list.innerHTML = '<div style="color:var(--muted);font-size:13px;">No ads yet. Generate your first one!</div>'; return; }
+
+  list.innerHTML = data.map(ad => `
+    <div class="ad-history-item" onclick="loadAdToEditor('${ad.id}')">
+      <div class="ad-history-preview">${sanitize(ad.content.slice(0,80))}...</div>
+      <div class="ad-history-meta">
+        <span class="ad-history-date">${new Date(ad.created_at).toLocaleDateString()} · ${sanitize(ad.server_name||'')}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="fav-btn" onclick="event.stopPropagation();toggleFav('${ad.id}',${ad.favorited})">${ad.favorited?'⭐':'☆'}</button>
+          <button class="fav-btn" onclick="event.stopPropagation();deleteAd('${ad.id}')">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function toggleFav(id, current) {
+  await sb.from('ads').update({ favorited: !current }).eq('id', id).eq('user_id', currentUser.id);
+  loadHistory();
+}
+
+async function deleteAd(id) {
+  if (!confirm('Delete this ad?')) return;
+  await sb.from('ads').delete().eq('id', id).eq('user_id', currentUser.id);
+  loadHistory();
+}
+
+function loadAdToEditor(id) {
+  switchTab('adgen', document.querySelector('.tab'));
+  document.querySelectorAll('.tab')[0].click();
+}
+
+// ── TEMPLATES ──
+async function saveTemplate() {
+  if (!currentUser) return;
+  const data = getFormData();
+  const name = prompt('Template name?');
+  if (!name) return;
+  const { error } = await sb.from('templates').insert({
+    user_id: currentUser.id,
+    name: sanitize(name),
+    server_name: data.name,
+    description: data.desc,
+    services: data.svcs.join('\n'),
+    hiring: data.hiring,
+    style: chosenStyle
+  });
+  if (!error) { alert('Template saved!'); loadTemplates(); }
+  else alert('Save failed: ' + error.message);
+}
+
+async function loadTemplates() {
+  if (!currentUser) return;
+  const { data, error } = await sb.from('templates').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  if (error) return;
+
+  document.getElementById('stat-templates').textContent = data.length;
+  const grid = document.getElementById('template-grid');
+  if (!data.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:13px;">No templates yet. Save your first one!</div>'; return; }
+
+  grid.innerHTML = data.map(t => `
+    <div class="template-card">
+      <div class="template-name">${sanitize(t.name)}</div>
+      <div class="template-meta">${sanitize(t.server_name||'')} · ${sanitize(t.style||'')}</div>
+      <div class="template-actions">
+        <button class="btn-sm" onclick="loadTemplate('${t.id}')">Load</button>
+        <button class="btn-sm" onclick="deleteTemplate('${t.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadTemplate(id) {
+  if (!currentUser) return;
+  const { data, error } = await sb.from('templates').select('*').eq('id', id).eq('user_id', currentUser.id).single();
+  if (error || !data) return;
+  document.getElementById('name').value = data.server_name || '';
+  document.getElementById('desc').value = data.description || '';
+  document.getElementById('hiring').value = data.hiring || '';
+  document.getElementById('svc-list').innerHTML = '';
+  (data.services || '').split('\n').filter(Boolean).forEach(s => {
+    const d = document.createElement('div'); d.className = 'svc-row';
+    d.innerHTML = `<input type="text" value="${sanitize(s)}"/><button class="rm-btn" onclick="rm(this)">×</button>`;
+    document.getElementById('svc-list').appendChild(d);
+  });
+  document.querySelectorAll('.style-opt').forEach(el => {
+    el.classList.toggle('chosen', el.dataset.style === data.style);
+  });
+  chosenStyle = data.style || 'bold';
+  switchTab('adgen', document.querySelectorAll('.tab')[0]);
+  document.querySelectorAll('.tab')[0].classList.add('active');
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  await sb.from('templates').delete().eq('id', id).eq('user_id', currentUser.id);
+  loadTemplates();
+}
+
+// ── IMAGE EDITOR ──
+let mainImg = null, logoImg = null, currentMode = 'logo', currentPos = 'br';
+let textPos = 'mc', stickerPos = 'mc', selectedSticker = null;
+let textBold = false, textItalic = false;
+let canvas = null, ctx = null;
+let targetWidth = null, targetHeight = null;
+
+const STICKERS = ['🔥','⭐','💎','🚀','⚡','👑','🎯','💯','🌟','✨','🏆','💪','🎉','🔑','💥'];
+document.getElementById('sticker-grid').innerHTML = STICKERS.map(s =>
+  `<button class="sticker-btn" onclick="selectSticker('${s}',this)">${s}</button>`
+).join('');
+
+function selectSticker(s, el) {
+  selectedSticker = s;
+  document.querySelectorAll('.sticker-btn').forEach(b => b.style.borderColor = '');
+  el.style.borderColor = 'var(--accent)';
+  updateCanvas();
+}
+
+function switchMode(mode, el) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.mode-section').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('mode-' + mode).classList.add('active');
+  updateCanvas();
+}
+
+function setPos(pos, el) {
+  currentPos = pos;
+  document.querySelectorAll('#mode-logo .pos-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  updateCanvas();
+}
+
+function setTextPos(pos, el) {
+  textPos = pos;
+  document.querySelectorAll('#mode-text .pos-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  updateCanvas();
+}
+
+function setStickerPos(pos, el) {
+  stickerPos = pos;
+  document.querySelectorAll('#mode-sticker .pos-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  updateCanvas();
+}
+
+function toggleTextStyle(style) {
+  if (style === 'bold') { textBold = !textBold; document.getElementById('bold-btn').style.borderColor = textBold ? 'var(--accent)' : ''; }
+  if (style === 'italic') { textItalic = !textItalic; document.getElementById('italic-btn').style.borderColor = textItalic ? 'var(--accent)' : ''; }
+  updateCanvas();
+}
+
+function loadMainImage(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => { mainImg = img; document.getElementById('main-upload-zone').classList.add('has-file'); document.getElementById('main-upload-zone').querySelector('p').textContent = file.name; initCanvas(); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadLogoImage(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => { logoImg = img; document.getElementById('logo-upload-zone').classList.add('has-file'); document.getElementById('logo-upload-zone').querySelector('p').textContent = file.name; updateCanvas(); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resizeCanvas(w, h) {
+  if (!mainImg) return;
+  targetWidth = w; targetHeight = h;
+  initCanvas();
+}
+
+function initCanvas() {
+  if (!mainImg) return;
+  const wrap = document.getElementById('canvas-wrap');
+  wrap.innerHTML = '';
+  canvas = document.createElement('canvas');
+  const w = targetWidth || mainImg.width;
+  const h = targetHeight || mainImg.height;
+  canvas.width = w; canvas.height = h;
+  const maxW = wrap.clientWidth - 20;
+  const dispScale = Math.min(1, maxW / w);
+  canvas.style.width = (w * dispScale) + 'px';
+  canvas.style.height = (h * dispScale) + 'px';
+  canvas.style.borderRadius = '6px';
+  ctx = canvas.getContext('2d');
+  wrap.appendChild(canvas);
+  document.getElementById('dl-btn').disabled = false;
+  updateCanvas();
+}
+
+function getPosCoords(pos, w, h, ow, oh, pad) {
+  let x, y;
+  if (pos==='tl'||pos==='ml'||pos==='bl') x = pad;
+  else if (pos==='tc'||pos==='mc'||pos==='bc') x = w/2 - ow/2;
+  else x = w - ow - pad;
+  if (pos==='tl'||pos==='tc'||pos==='tr') y = pad;
+  else if (pos==='ml'||pos==='mc'||pos==='mr') y = h/2 - oh/2;
+  else y = h - oh - pad;
+  return { x, y };
+}
+
+function updateCanvas() {
+  if (!canvas || !ctx || !mainImg) return;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (currentMode === 'blur') {
+    const blur = parseInt(document.getElementById('blur-amount').value);
+    ctx.filter = `blur(${blur}px)`;
+    ctx.drawImage(mainImg, 0, 0, w, h);
+    ctx.filter = 'none';
+    const dark = parseInt(document.getElementById('overlay-dark').value) / 100;
+    ctx.fillStyle = `rgba(0,0,0,${dark})`;
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    ctx.drawImage(mainImg, 0, 0, w, h);
+  }
+
+  if (currentMode === 'logo' && logoImg) {
+    const sp = parseInt(document.getElementById('logo-size').value) / 100;
+    const op = parseInt(document.getElementById('logo-opacity').value) / 100;
+    const lw = w * sp, lh = (logoImg.height / logoImg.width) * lw;
+    const pad = w * 0.03;
+    const { x, y } = getPosCoords(currentPos, w, h, lw, lh, pad);
+    ctx.globalAlpha = op;
+    ctx.drawImage(logoImg, x, y, lw, lh);
+    ctx.globalAlpha = 1;
+  }
+
+  if (currentMode === 'text') {
+    const text = document.getElementById('text-content').value;
+    const sub = document.getElementById('text-sub').value;
+    const size = parseInt(document.getElementById('text-size').value);
+    const color = document.getElementById('text-color').value;
+    const font = document.getElementById('text-font').value;
+    const weight = textBold ? 'bold' : 'normal';
+    const style = textItalic ? 'italic' : 'normal';
+    ctx.font = `${style} ${weight} ${size}px "${font}", sans-serif`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(text).width;
+    const th = size;
+    const pad = 30;
+    const { x, y } = getPosCoords(textPos, w, h, tw, th + (sub ? size*0.6 : 0), pad);
+    ctx.fillText(text, x + tw/2, y + th/2);
+    if (sub) {
+      ctx.font = `${Math.round(size*0.5)}px "${font}", sans-serif`;
+      ctx.fillStyle = color + 'cc';
+      ctx.fillText(sub, x + tw/2, y + th + size*0.4);
+    }
+  }
+
+  if (currentMode === 'sticker' && selectedSticker) {
+    const size = parseInt(document.getElementById('sticker-size').value);
+    const pad = 20;
+    const { x, y } = getPosCoords(stickerPos, w, h, size, size, pad);
+    ctx.font = `${size}px serif`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(selectedSticker, x, y);
+  }
+}
+
+function downloadImage() {
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'adgen-image.png';
+  link.href = canvas.toDataURL('image/png', 1.0);
+  link.click();
+}
+
+// ── INIT ──
+initAuth();
+</script>
+</body>
+</html>
