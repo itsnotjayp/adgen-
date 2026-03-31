@@ -12,9 +12,9 @@
   --bg:#08080c;--bg1:#0f0f14;--bg2:#16161d;--bg3:#1e1e27;--bg4:#252530;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--border3:rgba(255,255,255,0.18);
   --accent:#2563eb;--accent2:#1d4ed8;--accent3:#3b82f6;--glow:rgba(37,99,235,0.2);
-  --grad:linear-gradient(135deg,#2563eb,#7c3aed);
+  --grad:linear-gradient(135deg,#2563eb,#1240b0);
   --text:#f1f0f7;--text2:#9d9baf;--text3:#5a5870;
-  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--purple:#7c3aed;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--purple:#1240b0;
   --r:8px;--rl:12px;--rxl:16px;
   --sb:240px;
 }
@@ -48,6 +48,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 @keyframes spDiv{to{width:48px;}}
 .sp-tag{font-size:13px;color:rgba(255,255,255,0.35);margin-top:14px;letter-spacing:0.06em;z-index:2;animation:spFd 0.5s ease 2.1s both;}
 .sp-cta{font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:0.15em;text-transform:uppercase;margin-top:28px;z-index:2;animation:spFd 0.4s ease 2.5s both,spOut 0.7s ease 3.3s forwards;}
+.sp-progress{width:200px;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;margin-top:32px;z-index:2;overflow:hidden;animation:spFd 0.4s ease 1.8s both;}
+.sp-progress-fill{height:100%;background:var(--grad);border-radius:1px;animation:spProgress 3.2s ease 1.8s both;}
+@keyframes spProgress{from{width:0%;}to{width:100%;}}
+.sp-ver{position:absolute;bottom:24px;right:24px;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:0.1em;z-index:2;animation:spFd 0.5s ease 2s both;}
 @keyframes spFd{from{opacity:0;}to{opacity:1;}}
 @keyframes spUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 @keyframes spOut{to{opacity:0;transform:scale(1.4);letter-spacing:0.4em;}}
@@ -114,6 +118,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .sb-sect{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:12px 8px 4px;}
 .ni{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;margin-bottom:1px;border:1px solid transparent;position:relative;}
 .ni:hover{background:var(--bg2);color:var(--text);}
+.ni::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--grad);border-radius:0 2px 2px 0;transform:scaleY(0);transition:transform 0.15s ease;}
+.ni.on::before{transform:scaleY(1);}
 .ni.on{background:rgba(37,99,235,0.1);color:var(--accent3);border-color:rgba(37,99,235,0.2);}
 .ni .ni-i{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
 .ni .ni-badge{position:absolute;right:8px;font-size:9px;padding:1px 6px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;}
@@ -137,7 +143,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .tb-badge.warn{border-color:rgba(245,158,11,0.3);color:var(--yellow);}
 .tb-badge.danger{border-color:rgba(239,68,68,0.3);color:var(--red);}
 .tb-total{font-size:11px;padding:3px 12px;border-radius:20px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);color:var(--accent3);font-weight:600;display:flex;align-items:center;gap:5px;}
-.tb-total::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:tbPulse 2s ease-in-out infinite;}
+.tb-total::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:tbPulse 2s ease-in-out infinite;}
 @keyframes tbPulse{0%,100%{opacity:0.5;transform:scale(0.8);}50%{opacity:1;transform:scale(1.1);}}
 
 /* PAGES */
@@ -250,6 +256,9 @@ textarea{resize:vertical;line-height:1.5;min-height:60px;}
 @media(max-width:800px){.stats-row{grid-template-columns:repeat(2,1fr);}}
 .stat-c{background:var(--bg1);border:1px solid var(--border);border-radius:var(--rl);padding:16px;position:relative;overflow:hidden;}
 .stat-c::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--grad);}
+.stat-c:hover{border-color:var(--border2);transform:translateY(-2px);transition:all 0.2s ease;}
+.stat-n{font-size:28px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:countUp 0.6s ease both;}
+@keyframes countUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .stat-n{font-size:28px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-l{font-size:11px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
 
@@ -344,6 +353,27 @@ canvas{max-width:100%;display:block;}
 .toast.e{background:#1a0a0a;border-color:rgba(239,68,68,0.3);color:var(--red);}
 .toast.i{background:#0d1a35;border-color:rgba(37,99,235,0.3);color:#93c5fd;}
 @keyframes tIn{from{opacity:0;transform:translateY(8px) scale(0.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* RATING */
+.rating-box{background:var(--bg1);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-top:12px;animation:pgIn 0.3s ease;}
+.rating-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.rating-rows{display:flex;flex-direction:column;gap:10px;}
+.rating-row{display:flex;align-items:center;gap:10px;}
+.rating-label{font-size:12px;font-weight:600;color:var(--text2);width:80px;flex-shrink:0;}
+.rating-bar-wrap{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.rating-bar{height:100%;border-radius:3px;background:var(--grad);transition:width 0.8s cubic-bezier(.16,1,.3,1);}
+.rating-score{font-size:13px;font-weight:700;width:28px;text-align:right;color:var(--text);}
+.rating-overall{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rating-overall-score{font-size:24px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.rating-tip{font-size:11px;color:var(--text3);max-width:200px;text-align:right;line-height:1.4;}
+.rating-loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);padding:8px 0;}
+
+/* GLOW ORBS animation */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:orbFloat ease-in-out infinite;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-30px) scale(1.05);}}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(37,99,235,0.06) 0%,transparent 70%);top:-200px;left:-200px;animation-duration:12s;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(18,64,176,0.05) 0%,transparent 70%);bottom:-100px;right:-100px;animation-duration:9s;animation-delay:2s;}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(37,99,235,0.04) 0%,transparent 70%);top:40%;left:30%;animation-duration:15s;animation-delay:4s;}
 </style>
 </head>
 <body>
@@ -362,6 +392,8 @@ canvas{max-width:100%;display:block;}
   <div class="sp-div"></div>
   <div class="sp-tag">Big Results, Small Budget</div>
   <div class="sp-cta">Changing the Industry</div>
+  <div class="sp-progress"><div class="sp-progress-fill"></div></div>
+  <div class="sp-ver">v2.0</div>
 </div>
 
 <!-- LANDING -->
@@ -443,6 +475,7 @@ canvas{max-width:100%;display:block;}
 </div>
 
 <!-- APP -->
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
 <div id="app">
   <div class="sb">
     <div class="sb-header">
@@ -505,17 +538,17 @@ canvas{max-width:100%;display:block;}
           <div class="card">
             <div class="card-t">Server Type</div>
             <div class="type-grid">
-              <div class="type-opt on" data-t="gaming"><div class="ti">🎮</div><div class="tn">Gaming</div></div>
-              <div class="type-opt" data-t="roblox"><div class="ti">🟥</div><div class="tn">Roblox</div></div>
+              <div class="type-opt on" data-t="tech"><div class="ti">💻</div><div class="tn">Tech</div></div>
+              <div class="type-opt" data-t="aviation"><div class="ti">✈️</div><div class="tn">Aviation</div></div>
+              <div class="type-opt" data-t="scp"><div class="ti">🔴</div><div class="tn">SCP</div></div>
+              <div class="type-opt" data-t="muslim"><div class="ti">☪️</div><div class="tn">Muslim</div></div>
               <div class="type-opt" data-t="roleplay"><div class="ti">🎭</div><div class="tn">Roleplay</div></div>
-              <div class="type-opt" data-t="tech"><div class="ti">💻</div><div class="tn">Tech</div></div>
-              <div class="type-opt" data-t="music"><div class="ti">🎵</div><div class="tn">Music</div></div>
+              <div class="type-opt" data-t="gaming"><div class="ti">🎮</div><div class="tn">Gaming</div></div>
+              <div class="type-opt" data-t="roblox"><div class="ti">🟥</div><div class="tn">Roblox</div></div>
               <div class="type-opt" data-t="anime"><div class="ti">⛩️</div><div class="tn">Anime</div></div>
               <div class="type-opt" data-t="business"><div class="ti">💼</div><div class="tn">Business</div></div>
               <div class="type-opt" data-t="creative"><div class="ti">🎨</div><div class="tn">Creative</div></div>
               <div class="type-opt" data-t="social"><div class="ti">💬</div><div class="tn">Social</div></div>
-              <div class="type-opt" data-t="educational"><div class="ti">📚</div><div class="tn">Study</div></div>
-              <div class="type-opt" data-t="nft"><div class="ti">🔷</div><div class="tn">NFT/Crypto</div></div>
               <div class="type-opt" data-t="other"><div class="ti">🌐</div><div class="tn">Other</div></div>
             </div>
           </div>
@@ -585,11 +618,13 @@ canvas{max-width:100%;display:block;}
                 <button class="btn btn-sm" onclick="togglePreview()">👁 Preview</button>
                 <button class="btn btn-sm" onclick="saveAd()">⭐ Save</button>
                 <button class="btn btn-sm" onclick="submitPublic()">🌐 Share</button>
+                  <button class="btn btn-sm" onclick="rateCurrentAd()" id="btn-rate">⭐ Rate</button>
               </div>
             </div>
             <div class="dots" id="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span id="dots-t">Generating...</span></div>
             <div id="out-content"><div class="out-empty">Fill in your details and click Generate ✦</div></div>
           </div>
+          <div id="rating-container"></div>
         </div>
       </div>
     </div>
@@ -780,7 +815,7 @@ const sb=supabase.createClient(SB_URL,SB_KEY);
 const LIMIT=10;
 
 // ── STATE ──
-let user=null,adText='',chosenStyle='bold',chosenType='gaming',showPrev=false;
+let user=null,adText='',chosenStyle='bold',chosenType='tech',showPrev=false;
 let activeTags=new Set();
 let allHistory=[];
 let prefs=JSON.parse(localStorage.getItem('adgen_prefs')||'{"dark":true,"autoPreview":false}');
@@ -1025,6 +1060,7 @@ async function generate(ab=false,skipCache=false){
       document.getElementById('ad-out').textContent=text;
       if(showPrev)content.insertAdjacentHTML('beforeend',renderDC(text));
       toast('Ad generated!','s');
+      if(d.rating){const rc=document.getElementById('rating-container');if(rc)showRating(d.rating,rc);}
     }
   }catch(e){
     dots.classList.remove('on');
@@ -1492,6 +1528,44 @@ function ieDl(){
   if(!ieCnv)return;
   const a=document.createElement('a');a.download='adgen-image.png';a.href=ieCnv.toDataURL('image/png',1.0);a.click();
   toast('Image downloaded!','s');
+}
+
+
+// ── AD RATER ──
+async function rateCurrentAd(){
+  if(!adText){toast('Generate an ad first','e');return;}
+  const container=document.getElementById('rating-container');
+  container.innerHTML=`<div class="rating-box"><div class="rating-title">⭐ Ad Rating</div><div class="rating-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Analysing your ad...</span></div></div>`;
+  try{
+    const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rateOnly:true,adToRate:adText})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d?.error||'Rating failed');
+    showRating(d.rating,container);
+  }catch(e){container.innerHTML=`<div class="rating-box"><div style="color:var(--red);font-size:13px;">Rating failed: ${san(e.message)}</div></div>`;}
+}
+
+function showRating(rating,container){
+  if(!rating||!container)return;
+  const color=(n)=>n>=8?'var(--green)':n>=5?'var(--accent3)':'var(--red)';
+  container.innerHTML=`
+  <div class="rating-box">
+    <div class="rating-title">⭐ Ad Rating</div>
+    <div class="rating-rows">
+      <div class="rating-row"><span class="rating-label">Attraction</span><div class="rating-bar-wrap"><div class="rating-bar" id="rb-a" style="width:0%"></div></div><span class="rating-score" style="color:${color(rating.attraction)}">${rating.attraction}/10</span></div>
+      <div class="rating-row"><span class="rating-label">Info</span><div class="rating-bar-wrap"><div class="rating-bar" id="rb-i" style="width:0%"></div></div><span class="rating-score" style="color:${color(rating.info)}">${rating.info}/10</span></div>
+      <div class="rating-row"><span class="rating-label">Visuals</span><div class="rating-bar-wrap"><div class="rating-bar" id="rb-v" style="width:0%"></div></div><span class="rating-score" style="color:${color(rating.visuals)}">${rating.visuals}/10</span></div>
+    </div>
+    <div class="rating-overall">
+      <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px;">Overall</div><div class="rating-overall-score">${rating.overall}/10</div></div>
+      <div class="rating-tip">💡 ${san(rating.tip||'')}</div>
+    </div>
+  </div>`;
+  setTimeout(()=>{
+    const a=document.getElementById('rb-a');const i=document.getElementById('rb-i');const v=document.getElementById('rb-v');
+    if(a)a.style.width=(rating.attraction*10)+'%';
+    if(i)i.style.width=(rating.info*10)+'%';
+    if(v)v.style.width=(rating.visuals*10)+'%';
+  },50);
 }
 
 // ── INIT ──
